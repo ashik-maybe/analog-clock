@@ -1,0 +1,358 @@
+/* Clock styles. Moved verbatim from the original inline <style> block. */
+            :root {
+                --s: min(78vmin, 540px);
+                --bg-hi: #f6f7f9;
+                --bg-lo: #e2e5ea;
+                --text: #17181a;
+                --muted: #71757d;
+                --bezel: #17181b;
+                --bezel-hi: rgba(255, 255, 255, 0.14);
+                --lip: #cfd3d9;
+                --dial: #fbfbfc;
+                --ink: #17181a;
+                --accent: #d92b2b;
+                --btn-bg: rgba(23, 24, 26, 0.06);
+                --btn-br: rgba(23, 24, 26, 0.5);
+                --shadow:
+                    0 34px 70px -26px rgba(15, 17, 20, 0.5),
+                    0 12px 28px -14px rgba(15, 17, 20, 0.28);
+                --hand-shadow: rgba(20, 22, 26, 0.28);
+                --sans: "Helvetica Neue", "Segoe UI", system-ui, -apple-system, Arial, sans-serif;
+                color-scheme: light;
+            }
+            [data-theme="dark"] {
+                --bg-hi: #17181c;
+                --bg-lo: #0a0b0d;
+                --text: #f0f1f4;
+                --muted: #8f959d;
+                --bezel: #08090b;
+                --bezel-hi: rgba(255, 255, 255, 0.09);
+                --lip: #33363b;
+                --dial: #1d1f23;
+                --ink: #f0f1f4;
+                --accent: #ff4b3a;
+                --btn-bg: rgba(255, 255, 255, 0.07);
+                --btn-br: rgba(255, 255, 255, 0.35);
+                --shadow:
+                    0 34px 80px -26px rgba(0, 0, 0, 0.85), 0 12px 32px -14px rgba(0, 0, 0, 0.6);
+                --hand-shadow: rgba(0, 0, 0, 0.55);
+                color-scheme: dark;
+            }
+
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+            ::selection {
+                background: rgba(217, 43, 43, 0.25);
+            }
+
+            body {
+                min-height: 100svh;
+                display: grid;
+                place-items: center;
+                overflow-x: hidden;
+                padding: 0 env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
+                font-family: var(--sans);
+                color: var(--text);
+                -webkit-font-smoothing: antialiased;
+            }
+
+            /* ---------- studio backdrop (crossfades between themes) ---------- */
+            .bg {
+                position: fixed;
+                inset: 0;
+                z-index: -1;
+                transition: opacity 0.55s ease;
+            }
+            .bg-light {
+                background: radial-gradient(120% 95% at 50% 6%, var(--bg-hi), var(--bg-lo));
+            }
+            .bg-dark {
+                background: radial-gradient(120% 95% at 50% 6%, #17181c, #0a0b0d);
+                opacity: 0;
+            }
+            [data-theme="dark"] .bg-light {
+                opacity: 0;
+            }
+            [data-theme="dark"] .bg-dark {
+                opacity: 1;
+            }
+            .grain {
+                position: fixed;
+                inset: -40px;
+                z-index: 60;
+                pointer-events: none;
+                opacity: 0.04;
+                mix-blend-mode: overlay;
+                background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+            }
+
+            /* ---------- theme button ---------- */
+            .icon-btn {
+                position: fixed;
+                z-index: 70;
+                top: max(18px, env(safe-area-inset-top, 0px));
+                right: max(18px, env(safe-area-inset-right, 0px));
+                width: 42px;
+                height: 42px;
+                border-radius: 50%;
+                border: 1px solid var(--btn-br);
+                background: var(--btn-bg);
+                color: var(--text);
+                cursor: pointer;
+                display: grid;
+                place-items: center;
+                transition:
+                    background-color 0.3s,
+                    border-color 0.45s,
+                    color 0.45s;
+            }
+            .icon-btn:focus-visible {
+                outline: 2px solid var(--accent);
+                outline-offset: 3px;
+            }
+            .icon-btn .ic {
+                position: absolute;
+                width: 18px;
+                height: 18px;
+                transition:
+                    transform 0.5s cubic-bezier(0.35, 1.3, 0.5, 1),
+                    opacity 0.3s;
+            }
+            [data-theme="light"] .ic-sun {
+                opacity: 0;
+                transform: rotate(100deg) scale(0.4);
+            }
+            [data-theme="light"] .ic-moon {
+                opacity: 1;
+                transform: none;
+            }
+            [data-theme="dark"] .ic-moon {
+                opacity: 0;
+                transform: rotate(-100deg) scale(0.4);
+            }
+            [data-theme="dark"] .ic-sun {
+                opacity: 1;
+                transform: none;
+            }
+
+            .sr-only {
+                position: absolute;
+                width: 1px;
+                height: 1px;
+                padding: 0;
+                margin: -1px;
+                overflow: hidden;
+                clip: rect(0, 0, 0, 0);
+                clip-path: inset(50%);
+                white-space: nowrap;
+                border: 0;
+            }
+
+            /* ---------- the clock ---------- */
+            .stage {
+                perspective: 1100px;
+            }
+            .clockwrap {
+                position: relative;
+                width: var(--s);
+                aspect-ratio: 1;
+                container-type: inline-size;
+                animation: settle 0.8s cubic-bezier(0.25, 1.25, 0.4, 1) 0.05s backwards;
+            }
+            @keyframes settle {
+                from {
+                    opacity: 0;
+                    transform: scale(0.94) translateY(10px);
+                }
+            }
+
+            .clock {
+                position: absolute;
+                inset: 0;
+                border-radius: 50%;
+                background: var(--bezel);
+                box-shadow:
+                    var(--shadow),
+                    inset 0 1px 1px var(--bezel-hi),
+                    inset 0 -2px 5px rgba(0, 0, 0, 0.5);
+                transition:
+                    background-color 0.5s,
+                    box-shadow 0.5s;
+            }
+
+            .lip {
+                position: absolute;
+                inset: 3.4cqw;
+                border-radius: 50%;
+                background: var(--lip);
+                box-shadow:
+                    inset 0 1px 2px rgba(255, 255, 255, 0.35),
+                    inset 0 -1px 3px rgba(0, 0, 0, 0.25);
+                transition: background-color 0.5s;
+            }
+
+            .dial {
+                position: absolute;
+                inset: 4.6cqw;
+                border-radius: 50%;
+                background: var(--dial);
+                box-shadow: inset 0 1.2cqw 2.8cqw rgba(0, 0, 0, 0.16);
+                transition: background-color 0.5s;
+            }
+            .dial::before {
+                content: "";
+                position: absolute;
+                inset: 0;
+                border-radius: 50%;
+                pointer-events: none;
+                background:
+                    radial-gradient(circle at 50% 36%, rgba(255, 255, 255, 0.1), transparent 58%),
+                    radial-gradient(circle at 50% 50%, transparent 64%, rgba(0, 0, 0, 0.09) 100%);
+            }
+            .dial > * {
+                pointer-events: none;
+            }
+
+            .tick {
+                position: absolute;
+                left: 50%;
+                top: 50%;
+                background: var(--ink);
+                transition: background-color 0.5s;
+            }
+            .tick.minor {
+                width: 0.8cqw;
+                border-radius: 0.4cqw;
+            }
+            .tick.major {
+                clip-path: polygon(0 0, 100% 0, 50% 100%);
+            }
+
+            .numeral {
+                position: absolute;
+                left: 50%;
+                top: 50%;
+                font-family: var(--sans);
+                font-weight: 700;
+                font-size: 10cqw;
+                letter-spacing: -0.015em;
+                color: var(--ink);
+                font-variant-numeric: tabular-nums;
+                transition: color 0.5s;
+            }
+
+            /* ---------- hands ---------- */
+            .hand {
+                position: absolute;
+                inset: 0;
+                transform-origin: 50% 50%;
+                filter: drop-shadow(0 0.7cqw 0.9cqw var(--hand-shadow));
+                transition: filter 0.5s;
+            }
+            .hand .blade,
+            .hand .tail {
+                position: absolute;
+                left: 50%;
+                transform: translateX(-50%);
+                background: var(--ink);
+                border-radius: 1.2cqw;
+                transition: background-color 0.5s;
+            }
+            .blade {
+                bottom: 50%;
+            }
+            .tail {
+                top: 50%;
+            }
+
+            .hand-hour .blade {
+                width: 2.7cqw;
+                height: 27cqw;
+            }
+            .hand-hour .tail {
+                width: 2.7cqw;
+                height: 6cqw;
+            }
+            .hand-minute .blade {
+                width: 2.3cqw;
+                height: 41cqw;
+            }
+            .hand-minute .tail {
+                width: 2.3cqw;
+                height: 6cqw;
+            }
+
+            .hand-second .blade {
+                width: 0.8cqw;
+                height: 42.5cqw;
+                background: var(--accent);
+                border-radius: 0.4cqw;
+            }
+            .hand-second .tail {
+                width: 1.7cqw;
+                height: 13cqw;
+                background: var(--accent);
+                border-radius: 0.8cqw;
+            }
+            .hand-second .blade,
+            .hand-second .tail {
+                transition: background-color 0.5s;
+            }
+
+            /* mechanical quartz step */
+            .hand-second.step {
+                transition:
+                    transform 0.22s cubic-bezier(0.35, 1.4, 0.55, 1),
+                    filter 0.5s;
+            }
+            /* wind-up on load */
+            .hand.boot {
+                transition:
+                    transform 1.15s cubic-bezier(0.3, 1.1, 0.35, 1),
+                    filter 0.5s;
+            }
+
+            .cap {
+                position: absolute;
+                left: 50%;
+                top: 50%;
+                transform: translate(-50%, -50%);
+                width: 3.2cqw;
+                height: 3.2cqw;
+                border-radius: 50%;
+                background:
+                    radial-gradient(circle at 35% 30%, rgba(255, 255, 255, 0.35), transparent 45%),
+                    var(--ink);
+                box-shadow: 0 0.5cqw 1cqw rgba(0, 0, 0, 0.3);
+                transition: background-color 0.5s;
+            }
+
+            .glass {
+                position: absolute;
+                inset: 4.6cqw;
+                border-radius: 50%;
+                pointer-events: none;
+                background: radial-gradient(
+                    circle at 32% 24%,
+                    rgba(255, 255, 255, 0.09),
+                    rgba(255, 255, 255, 0.02) 26%,
+                    transparent 48%
+                );
+            }
+
+            @media (prefers-reduced-motion: reduce) {
+                .clockwrap {
+                    animation-duration: 0.01s;
+                }
+                .hand-second.step,
+                .hand.boot {
+                    transition: filter 0.5s;
+                }
+                .icon-btn,
+                .icon-btn .ic {
+                    transition-duration: 0.01s;
+                }
+            }
