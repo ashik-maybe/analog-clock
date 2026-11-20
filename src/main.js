@@ -29,6 +29,7 @@
                     root.dataset.theme = t;
                     if (save) store("clock-theme", t);
                     metaTheme.content = t === "dark" ? "#0a0b0d" : "#e4e7ec";
+                    $("themeBtn").setAttribute("aria-pressed", String(t === "dark"));
                 }
                 function toggleTheme() {
                     setTheme(root.dataset.theme === "dark" ? "light" : "dark", true);

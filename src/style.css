@@ -95,8 +95,8 @@
                 z-index: 70;
                 top: max(18px, env(safe-area-inset-top, 0px));
                 right: max(18px, env(safe-area-inset-right, 0px));
-                width: 42px;
-                height: 42px;
+                width: 44px;
+                height: 44px;
                 border-radius: 50%;
                 border: 1px solid var(--btn-br);
                 background: var(--btn-bg);
