@@ -2,13 +2,19 @@
 <html lang="en">
     <head>
         <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
         <meta name="theme-color" id="metaTheme" content="#e4e7ec" />
         <title>Local Time</title>
         <link
             rel="icon"
             href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='29' fill='%23fff' stroke='%2317181a' stroke-width='6'/%3E%3Cpath d='M32 32V15' stroke='%2317181a' stroke-width='5' stroke-linecap='round'/%3E%3Cpath d='M32 32l14 9' stroke='%2317181a' stroke-width='4' stroke-linecap='round'/%3E%3Cpath d='M32 32l-8 14' stroke='%23d92b2b' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E"
         />
+        <link rel="manifest" href="/manifest.webmanifest" />
+        <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-title" content="Local Time" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="mobile-web-app-capable" content="yes" />
         <script>
             /* set theme before first paint: saved choice > device preference */
             (function () {
@@ -18,8 +24,10 @@
                         ? s === "dark"
                         : matchMedia("(prefers-color-scheme: dark)").matches;
                     document.documentElement.dataset.theme = dark ? "dark" : "light";
+                    document.getElementById("metaTheme").content = dark ? "#0a0b0d" : "#e4e7ec";
                 } catch (e) {
                     document.documentElement.dataset.theme = "light";
+                    document.getElementById("metaTheme").content = "#e4e7ec";
                 }
             })();
         </script>
@@ -37,7 +45,7 @@
                 --ink: #17181a;
                 --accent: #d92b2b;
                 --btn-bg: rgba(23, 24, 26, 0.06);
-                --btn-br: rgba(23, 24, 26, 0.15);
+                --btn-br: rgba(23, 24, 26, 0.5);
                 --shadow:
                     0 34px 70px -26px rgba(15, 17, 20, 0.5),
                     0 12px 28px -14px rgba(15, 17, 20, 0.28);
@@ -57,7 +65,7 @@
                 --ink: #f0f1f4;
                 --accent: #ff4b3a;
                 --btn-bg: rgba(255, 255, 255, 0.07);
-                --btn-br: rgba(255, 255, 255, 0.15);
+                --btn-br: rgba(255, 255, 255, 0.35);
                 --shadow:
                     0 34px 80px -26px rgba(0, 0, 0, 0.85), 0 12px 32px -14px rgba(0, 0, 0, 0.6);
                 --hand-shadow: rgba(0, 0, 0, 0.55);
@@ -78,6 +86,7 @@
                 display: grid;
                 place-items: center;
                 overflow-x: hidden;
+                padding: 0 env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
                 font-family: var(--sans);
                 color: var(--text);
                 -webkit-font-smoothing: antialiased;
@@ -117,8 +126,8 @@
             .icon-btn {
                 position: fixed;
                 z-index: 70;
-                top: max(18px, env(safe-area-inset-top));
-                right: max(18px, env(safe-area-inset-right));
+                top: max(18px, env(safe-area-inset-top, 0px));
+                right: max(18px, env(safe-area-inset-right, 0px));
                 width: 42px;
                 height: 42px;
                 border-radius: 50%;
@@ -162,6 +171,19 @@
                 transform: none;
             }
 
+            .sr-only {
+                position: absolute;
+                width: 1px;
+                height: 1px;
+                padding: 0;
+                margin: -1px;
+                overflow: hidden;
+                clip: rect(0, 0, 0, 0);
+                clip-path: inset(50%);
+                white-space: nowrap;
+                border: 0;
+            }
+
             /* ---------- the clock ---------- */
             .stage {
                 perspective: 1100px;
@@ -172,7 +194,6 @@
                 aspect-ratio: 1;
                 container-type: inline-size;
                 animation: settle 0.8s cubic-bezier(0.25, 1.25, 0.4, 1) 0.05s backwards;
-                will-change: transform;
             }
             @keyframes settle {
                 from {
@@ -261,7 +282,6 @@
                 position: absolute;
                 inset: 0;
                 transform-origin: 50% 50%;
-                will-change: transform;
                 filter: drop-shadow(0 0.7cqw 0.9cqw var(--hand-shadow));
                 transition: filter 0.5s;
             }
@@ -316,7 +336,7 @@
             }
 
             /* mechanical quartz step */
-            .hand-second.tick {
+            .hand-second.step {
                 transition:
                     transform 0.22s cubic-bezier(0.35, 1.4, 0.55, 1),
                     filter 0.5s;
@@ -360,7 +380,7 @@
                 .clockwrap {
                     animation-duration: 0.01s;
                 }
-                .hand-second.tick,
+                .hand-second.step,
                 .hand.boot {
                     transition: filter 0.5s;
                 }
@@ -407,11 +427,12 @@
         </button>
 
         <main>
+            <time id="a11yTime" class="sr-only"></time>
             <div class="stage">
-                <div class="clockwrap" id="wrap">
+                <div class="clockwrap" id="wrap" aria-hidden="true">
                     <div class="clock" id="clock">
                         <div class="lip"></div>
-                        <div class="dial">
+                        <div class="dial" aria-hidden="true">
                             <div id="ticks"></div>
                             <div id="numerals"></div>
                             <div class="hand hand-hour" id="hHour">
@@ -420,7 +441,7 @@
                             <div class="hand hand-minute" id="hMin">
                                 <span class="blade"></span><span class="tail"></span>
                             </div>
-                            <div class="hand hand-second" id="hSec">
+                            <div class="hand hand-second step" id="hSec">
                                 <span class="blade"></span><span class="tail"></span>
                             </div>
                             <div class="cap"></div>
@@ -440,7 +461,8 @@
                 const hSec = $("hSec"),
                     hMin = $("hMin"),
                     hHour = $("hHour"),
-                    metaTheme = $("metaTheme");
+                    metaTheme = $("metaTheme"),
+                    a11yTime = $("a11yTime");
 
                 const RM = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -462,12 +484,29 @@
                 function setTheme(t, save) {
                     root.dataset.theme = t;
                     if (save) store("clock-theme", t);
-                    metaTheme.content = t === "dark" ? "#0a0b0d" : "#e2e5ea";
+                    metaTheme.content = t === "dark" ? "#0a0b0d" : "#e4e7ec";
+                }
+                function toggleTheme() {
+                    setTheme(root.dataset.theme === "dark" ? "light" : "dark", true);
                 }
                 setTheme(root.dataset.theme || "light", false); // sync meta tag
-                $("themeBtn").addEventListener("click", () =>
-                    setTheme(root.dataset.theme === "dark" ? "light" : "dark", true),
-                );
+                $("themeBtn").addEventListener("click", toggleTheme);
+                document.addEventListener("keydown", (e) => {
+                    if (e.repeat || e.ctrlKey || e.metaKey || e.altKey) return;
+                    const target = e.target;
+                    const tag = target && target.tagName;
+                    if (
+                        tag === "INPUT" ||
+                        tag === "TEXTAREA" ||
+                        tag === "SELECT" ||
+                        (target && target.isContentEditable)
+                    )
+                        return;
+                    if (e.key === "t" || e.key === "T") {
+                        e.preventDefault();
+                        toggleTheme();
+                    }
+                });
                 mq.addEventListener("change", (e) => {
                     // follow device until user chooses
                     if (!read("clock-theme")) setTheme(e.matches ? "dark" : "light", false);
@@ -497,23 +536,15 @@
                     nums.appendChild(n);
                 }
 
-                /* ================= movement: sweep (continuous) ================= */
+                /* ================= movement: quartz step (1Hz) ================= */
                 let booting = !RM;
                 function setHands(now) {
-                    const s = now.getSeconds() + now.getMilliseconds() / 1000;
+                    const s = now.getSeconds();
                     const m = now.getMinutes() + s / 60;
                     const h = (now.getHours() % 12) + m / 60;
                     hHour.style.transform = `rotate(${(h * 30).toFixed(3)}deg)`;
                     hMin.style.transform = `rotate(${(m * 6).toFixed(3)}deg)`;
                     hSec.style.transform = `rotate(${(s * 6).toFixed(2)}deg)`;
-                }
-                if (booting) {
-                    [hHour, hMin, hSec].forEach((el) => el.classList.add("boot"));
-                    requestAnimationFrame(() => requestAnimationFrame(() => setHands(new Date())));
-                    setTimeout(() => {
-                        booting = false;
-                        [hHour, hMin, hSec].forEach((el) => el.classList.remove("boot"));
-                    }, 1250);
                 }
 
                 /* ================= formatters ================= */
@@ -521,26 +552,70 @@
                     hour: "2-digit",
                     minute: "2-digit",
                 });
-                const fWd = new Intl.DateTimeFormat("en", { weekday: "short" });
-                const fMd = new Intl.DateTimeFormat("en", {
+                const fWd = new Intl.DateTimeFormat(undefined, { weekday: "short" });
+                const fMd = new Intl.DateTimeFormat(undefined, {
                     month: "short",
                     day: "numeric",
                 });
 
-                /* ================= heartbeat ================= */
-                function frame() {
-                    const now = new Date();
-
-                    if (!booting) {
-                        setHands(now);
-                    }
-
-                    document.title = `${fWd.format(now)} · ${fMd.format(now)} · ${fTime.format(now)}`;
-
-                    requestAnimationFrame(frame);
+                /* ================= time text (cached per minute) ================= */
+                let lastMinuteKey = "";
+                function updateTimeText(now) {
+                    const key = `${now.getFullYear()}-${now.getMonth()}-${now.getDate()}-${now.getHours()}-${now.getMinutes()}`;
+                    if (key === lastMinuteKey) return;
+                    lastMinuteKey = key;
+                    const text = `${fWd.format(now)} · ${fMd.format(now)} · ${fTime.format(now)}`;
+                    document.title = text;
+                    a11yTime.textContent = text;
+                    a11yTime.dateTime = now.toISOString();
                 }
-                requestAnimationFrame(frame);
+
+                function sync() {
+                    const now = new Date();
+                    if (!booting) setHands(now);
+                    updateTimeText(now);
+                }
+
+                if (booting) {
+                    [hHour, hMin, hSec].forEach((el) => el.classList.add("boot"));
+                    requestAnimationFrame(() => requestAnimationFrame(() => setHands(new Date())));
+                    setTimeout(() => {
+                        booting = false;
+                        [hHour, hMin, hSec].forEach((el) => el.classList.remove("boot"));
+                        sync();
+                    }, 1250);
+                }
+
+                /* ================= heartbeat ================= */
+                function tick() {
+                    sync();
+                    scheduleTick();
+                }
+                function scheduleTick() {
+                    setTimeout(tick, 1000 - (Date.now() % 1000) + 20);
+                }
+
+                document.addEventListener("visibilitychange", () => {
+                    if (!document.hidden) sync();
+                });
+
+                sync();
+                scheduleTick();
             })();
+        </script>
+        <script type="module">
+            if (import.meta.env.PROD && "serviceWorker" in navigator) {
+                window.addEventListener("load", () =>
+                    navigator.serviceWorker
+                        .register(`${import.meta.env.BASE_URL}sw.js`)
+                        .catch(() => {})
+                );
+            } else if (import.meta.env.DEV && "serviceWorker" in navigator) {
+                navigator.serviceWorker
+                    .getRegistrations()
+                    .then((rs) => rs.forEach((r) => r.unregister()));
+                if (window.caches) caches.keys().then((keys) => keys.forEach((k) => k.startsWith("cache-clock-") && caches.delete(k)));
+            }
         </script>
     </body>
 </html>
