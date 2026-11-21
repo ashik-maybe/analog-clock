@@ -15,7 +15,11 @@ bun run preview
 
 Deploy the built output as static files. HTTPS is required for PWA install.
 
-Deploy at the domain root: the manifest, SW precache list, and icon paths use root-absolute URLs (`/manifest.webmanifest`, `/sw.js`, `/icons/...`), so a subpath deploy will break install/offline.
+Deploy at the /analog-clock/ project path. Vite base, manifest paths and service worker paths all use that prefix.
+
+## CI/CD
+
+The GitHub Actions workflow builds with Bun on every push to main. It uploads dist and deploys it through GitHub Pages. Set the repository Pages source to GitHub Actions.
 
 ## PWA
 
@@ -25,7 +29,7 @@ PWA-related files:
 - `public/sw.js`
 - `public/icons/`
 
-Service worker registers only in production builds; dev mode unregisters old SWs and clears app caches. Once loaded online, the clock opens offline.
+Service worker registers only in production builds; dev mode unregisters old SWs and clears app caches. Once loaded online, the clock opens offline. `CACHE_VERSION` must change when precached paths change.
 
 ## Maintenance
 
