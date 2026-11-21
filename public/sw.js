@@ -1,18 +1,18 @@
-const CACHE_VERSION = 'clock-v1';
+const CACHE_VERSION = 'clock-v2';
 const CACHE_NAME = `cache-${CACHE_VERSION}`;
 
 const REQUIRED_PRECACHE = [
-  '/',
-  '/index.html',
-  '/manifest.webmanifest',
+  '/analog-clock/',
+  '/analog-clock/index.html',
+  '/analog-clock/manifest.webmanifest',
 ];
 
 const OPTIONAL_PRECACHE = [
-  '/icons/icon-192.png',
-  '/icons/icon-512.png',
-  '/icons/maskable-192.png',
-  '/icons/maskable-512.png',
-  '/icons/apple-touch-icon.png',
+  '/analog-clock/icons/icon-192.png',
+  '/analog-clock/icons/icon-512.png',
+  '/analog-clock/icons/maskable-192.png',
+  '/analog-clock/icons/maskable-512.png',
+  '/analog-clock/icons/apple-touch-icon.png',
 ];
 
 self.addEventListener('install', (event) => {
@@ -73,7 +73,7 @@ self.addEventListener('fetch', (event) => {
           }
           return response;
         } catch (_err) {
-          const cached = await caches.match('/index.html');
+          const cached = await caches.match('/analog-clock/index.html');
           if (cached) {
             return cached;
           }
